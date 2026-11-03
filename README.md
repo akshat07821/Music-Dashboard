@@ -358,6 +358,9 @@ Example Labels:
 # Author
 
 **Akshat Dubey**
+**VARNIKA JINDAL**
+**JAINAM PATEL**
+**DIVANSHI WADHWA**
 
 MBA Tech (Data Science) | NMIMS
 
