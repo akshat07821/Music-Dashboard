@@ -1,62 +1,368 @@
-# Live Music Mood Dashboard
+# 🎵 Music Dashboard - Product Requirements Document (PRD)
 
-The LabVIEW VI appends readings to `data.csv`. The Node server watches that file, runs the trained Python models on new 5-second windows, writes JSON snapshots under `output/`, and serves the live dashboard.
+## Project Information
+
+**Project Name:** Music Dashboard: Real-Time Audio Monitoring, Analytics & Alarm System
+
+**Domain:** SCADA, Audio Signal Processing, Machine Learning
+
+**Technologies Used:**
+- LabVIEW
+- Python
+- CSV Telemetry Logging
+- Power BI
+- Web Dashboard
+
+---
+
+# 1. Project Overview
+
+Music Dashboard is a SCADA-inspired real-time audio monitoring and analytics platform designed to bring industrial automation principles into the music and acoustic domain.
+
+The system captures live audio signals, processes them in real time, detects pitch and tempo, monitors sound levels, logs telemetry data, generates alarms, and performs machine learning-based mood analysis through a decoupled LabVIEW-Python architecture.
+
+---
+
+# 2. Problem Statement
+
+Traditional audio monitoring solutions typically focus on isolated tasks such as recording, spectrum analysis, or sound level monitoring. They lack:
+
+- Integrated monitoring
+- Alarm management
+- Historical telemetry logging
+- Machine learning analytics
+- Unified visualization dashboards
+
+This project addresses these gaps using a SCADA-based architecture for continuous audio supervision.
+
+---
+
+# 3. Objectives
+
+### Primary Objectives
+
+- Capture live audio continuously.
+- Compute loudness (dB) in real time.
+- Detect dominant pitch frequency.
+- Convert frequencies into musical notes.
+- Estimate tempo (BPM).
+- Trigger alarms when thresholds are violated.
+- Maintain telemetry logs.
+- Generate ML-based mood analytics.
+- Visualize data using dashboards.
+
+---
+
+# 4. Features
+
+## Real-Time Audio Acquisition
+
+- Continuous microphone input monitoring.
+- Live waveform visualization.
+- FFT-based frequency analysis.
+
+## Signal Processing
+
+- Decibel calculation.
+- Pitch detection.
+- Musical note identification.
+- BPM estimation.
+
+## Alarm Engine
+
+Supports:
+
+- Volume Clipping Alarm
+- Tempo Out-of-Range Alarm
+- Off-Key Detection Alarm
+
+## Historical Logging
+
+Stores:
+
+- Timestamp
+- BPM
+- Loudness
+- Frequency
+- Note
+- Alarm States
+
+## Machine Learning Analytics
+
+Python analytics engine generates:
+
+- Mood Classification
+- Arousal Score
+- Valence Score
+- Sliding Window Statistics
+
+## Dashboard System
+
+- LabVIEW HMI
+- Web Dashboard
+- Power BI Reporting
+
+---
+
+# 5. System Architecture
 
 ```
-LabVIEW VI -> data.csv -> server.js -> analyzer.py -> trained models
-                                             |              |
-                                      output/*.json <- dashboard HTML
+┌─────────────────┐
+│ Live Audio Input│
+└────────┬────────┘
+         │
+         ▼
+
+┌─────────────────┐
+│ LabVIEW DSP     │
+│ Processing      │
+└────────┬────────┘
+         │
+         ├──► HMI Dashboard
+         │
+         ├──► Alarm Engine
+         │
+         ▼
+
+┌─────────────────┐
+│ CSV Historian   │
+│ Data Logging    │
+└────────┬────────┘
+         │
+         ▼
+
+┌─────────────────┐
+│ Python Analytics│
+│ Engine          │
+└────────┬────────┘
+         │
+         ▼
+
+┌─────────────────┐
+│ Web Dashboard   │
+│ Power BI        │
+└─────────────────┘
 ```
 
-## Run
+---
 
-Install the Python dependencies once:
+# 6. Functional Requirements
+
+## FR-01 Audio Acquisition
+
+The system shall continuously capture audio from the microphone or audio interface.
+
+### Acceptance Criteria
+
+- Continuous acquisition.
+- No frame drops.
+- Stable execution.
+
+---
+
+## FR-02 Loudness Monitoring
+
+The system shall calculate and display signal loudness.
+
+### Acceptance Criteria
+
+- Output in dB.
+- Refresh in real time.
+- Range: -60 dB to +10 dB.
+
+---
+
+## FR-03 Pitch Detection
+
+The system shall identify dominant frequency.
+
+### Acceptance Criteria
+
+- Output in Hz.
+- Accurate pitch tracking.
+- Real-time updates.
+
+---
+
+## FR-04 Note Detection
+
+The system shall convert pitch frequencies into musical notes.
+
+### Supported Notes
 
 ```
-pip install -r requirements.txt
+C, C#, D, D#, E, F,
+F#, G, G#, A, A#, B
 ```
 
-Start the app from this folder:
+---
+
+## FR-05 Tempo Detection
+
+The system shall estimate BPM.
+
+### Acceptance Criteria
+
+- BPM displayed continuously.
+- Gauge indicator available.
+- Range: 40–220 BPM.
+
+---
+
+## FR-06 Alarm Monitoring
+
+### Volume Clipping Alarm
+
+Triggered when:
 
 ```
-npm start
+dB_Level >= Threshold
 ```
 
-Open [http://localhost:3000](http://localhost:3000). Keep the Node server running while the VI appends to `data.csv`. The page refreshes its JSON data every two seconds; analysis runs when the CSV changes, no more often than `min_interval_sec`. The dashboard colors change with the latest predicted mood.
+### Tempo Alarm
 
-If Python is not available as `python`, change `python_cmd` in `config.json` to `py`. Set `data_file` there to the VI's CSV path if it is not the `data.csv` in this folder. CSV headers are matched without regard to case or punctuation; `Timestamp`, `BPM`, `dB_Level`, `Pitch_Hz`, and `Note` are supported, along with the VI alarm columns.
-
-If port 3000 is already in use, start on another port in PowerShell:
+Triggered when:
 
 ```
-$env:PORT=3108
-npm start
+BPM < BPM_Min
+OR
+BPM > BPM_Max
 ```
 
-Then open `http://localhost:3108`. The browser must use the Node server URL so the page can access its `/api/dashboard` JSON endpoint; opening the HTML directly as a file will not connect to the VI data.
+### Off-Key Alarm
 
-## Models and JSON
+Triggered when:
 
-`config.json` enables trained inference by default. When available, `models/av_model.joblib` predicts arousal and valence, and its trained arousal/valence result determines the mood label. `models/mood_model.joblib` is used as the fallback mood classifier if the arousal/valence model is unavailable. Both use the feature names saved in their model bundles. Silent windows are labeled `silence` rather than sent to either model.
+```
+Pitch deviation > tolerance
+```
 
-Each analysis writes:
+---
 
-- `output/dashboard.json`: model status, latest prediction, and trend windows used by the page.
-- `output/windows.json`: time-window predictions and measurements.
-- `output/latest.json`: the latest window prediction.
-- `output/status.json`: analysis status and source-file details.
+## FR-07 Telemetry Logging
 
-The dashboard uses `/api/dashboard`; JSON is also available at `/api/status`, `/api/latest`, and `/api/windows?limit=100`. Analysis settings, including the 5-second window, silence threshold, and file watcher interval, are in `config.json`.
+The system shall save telemetry into CSV files.
 
-The dashboard shows the latest note sample and current alarm flags (clipping, tempo, and off-key). Alarm events are also written to `output/alarms.csv`; the note shown as current comes from the newest VI row, while the recent-window note is shown separately.
+### Logged Fields
 
-The trained mood classifier currently supports the classes included in its saved model (`calm`, `energetic`, `melancholic`, and `tense`). The dashboard displays those model predictions directly.
+- Timestamp
+- BPM
+- dB_Level
+- Pitch_Hz
+- Note
+- Alarm_Clip
+- Alarm_Tempo
+- Alarm_Offkey
 
-## Connect the LabVIEW VI
+---
 
-1. In `config.json`, set `data_file` to the same CSV path the VI writes. Keep `output_dir` and `model_file` pointed at the project's `output` and `models` folders.
-2. Configure the VI to append rows with a timestamp and BPM, dB level, pitch, and note fields. Keep the CSV header; do not overwrite it with each reading.
-3. Start the server with `npm start`, then open its local URL in a browser.
-4. Start the VI. The server watches the CSV, predicts mood from each new window with the trained model, and refreshes the JSON dashboard data. The page shows the current mood, measurements, and trends; it does not capture audio.
+## FR-08 Mood Analytics
 
-The supplied `models/mood_model.joblib` and `models/av_model.joblib` are used automatically with `use_ml_model: true`. `output/dashboard.json` is regenerated from the VI CSV on server startup and when that CSV changes.
+The analytics engine shall perform mood estimation.
+
+### Outputs
+
+- Arousal
+- Valence
+- Mood Label
+
+Example Labels:
+
+- Energetic
+- Relaxed
+- Excited
+- Melancholic
+
+---
+
+# 7. Non-Functional Requirements
+
+## Performance
+
+| Requirement | Target |
+|------------|---------|
+| HMI Update Rate | ≥ 10 Hz |
+| Logging Rate | 5 Hz |
+| Alarm Response | < 100 ms |
+
+## Reliability
+
+- Continuous operation without crashes.
+- No file corruption.
+
+## Maintainability
+
+- Modular architecture.
+- Independent analytics layer.
+
+## Scalability
+
+- Future MQTT integration.
+- OPC UA compatibility.
+- Multi-room monitoring support.
+
+---
+
+# 8. Technology Stack
+
+### Frontend
+
+- LabVIEW HMI
+- Web Dashboard
+
+### Backend
+
+- Python
+
+### Data Storage
+
+- CSV Files
+
+### Analytics
+
+- NumPy
+- Pandas
+- Signal Processing Algorithms
+
+### Reporting
+
+- Power BI
+- JSON APIs
+
+---
+
+# 9. Success Metrics
+
+| Metric | Goal |
+|----------|----------|
+| HMI Refresh Rate | ≥ 10 Hz |
+| Logging Accuracy | 100% |
+| Alarm Detection | <100 ms |
+| Pitch Tracking | Stable |
+| Data Loss | 0% |
+
+---
+
+# 10. Future Enhancements
+
+- Chord Detection
+- Polyphonic Pitch Analysis
+- Cloud Database Integration
+- MQTT Telemetry
+- OPC UA Support
+- Multi-Room Audio Monitoring
+- Advanced Power BI Reports
+
+---
+
+# Author
+
+**Akshat Dubey**
+
+MBA Tech (Data Science) | NMIMS
+
+---
+
+## Repository Description
+
+A SCADA-inspired real-time audio monitoring system built using LabVIEW and Python that performs live DSP analysis, telemetry logging, alarm management, and machine learning-based mood analytics.
