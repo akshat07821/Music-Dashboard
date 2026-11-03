@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#111827">
+  <title>Live Music Mood</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b1020;
+      --surface: rgba(19, 27, 45, .88);
+      --surface-raised: rgba(26, 36, 57, .9);
+      --line: rgba(148, 163, 184, .14);
+      --text: #f3f5ff;
+      --muted: #9aa8c2;
+      --mood: #60a5fa;
+      --mood-soft: rgba(96, 165, 250, .14);
+      --mood-glow: rgba(96, 165, 250, .25);
+      --blue: #60a5fa;
+      --pink: #f472b6;
+      --green: #4ade80;
+    }
+    * { box-sizing: border-box }
+    body {
+      min-height: 100vh;
+      margin: 0;
+      background:
+        radial-gradient(ellipse at 82% 4%, var(--mood-soft), transparent 34rem),
+        radial-gradient(ellipse at 8% 35%, rgba(80, 95, 160, .09), transparent 30rem),
+        var(--bg);
+      color: var(--text);
+      font: 14px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif;
+      transition: background-color .5s ease;
+    }
+    header, main { width: min(1180px, calc(100% - 40px)); margin: auto }
+    header {
+      min-height: 82px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 20px;
+      border-bottom: 1px solid var(--line);
+    }
+    .brand { display: flex; align-items: center; gap: 12px }
+    .brand-mark {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      place-items: center;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      background: var(--mood-soft);
+      color: var(--mood);
+      font-size: 19px;
+      transition: color .45s, background .45s;
+    }
+    h1 { margin: 0; font-size: 17px; letter-spacing: -.02em }
+    .eyebrow { color: var(--muted); font-size: 11px; letter-spacing: .13em; text-transform: uppercase }
+    .status { color: var(--muted); text-align: right; font-size: 12px }
+    .status-line { display: flex; align-items: center; justify-content: flex-end; gap: 8px; color: var(--text) }
+    .dot { width: 8px; height: 8px; border-radius: 50%; background: #64748b }
+    .dot.ok { background: #4ade80; box-shadow: 0 0 12px #4ade8070 }
+    .dot.error { background: #fb7185; box-shadow: 0 0 12px #fb718570 }
+    #updated { margin-top: 3px }
+    main { padding: 28px 0 48px }
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 230px;
+      align-items: center;
+      min-height: 244px;
+      overflow: hidden;
+      padding: 32px 38px;
+      border: 1px solid color-mix(in srgb, var(--mood) 36%, transparent);
+      border-radius: 24px;
+      background: linear-gradient(112deg, var(--mood-soft), rgba(19, 27, 45, .92) 60%);
+      box-shadow: 0 20px 70px -48px var(--mood-glow);
+      transition: border-color .45s, background .45s, box-shadow .45s;
+    }
+    .hero-copy { position: relative; z-index: 1 }
+    .hero .eyebrow { color: var(--mood); transition: color .45s }
+    .hero h2 { margin: 8px 0 3px; font-size: clamp(32px, 5vw, 52px); line-height: 1.05; letter-spacing: -.045em; text-transform: capitalize }
+    .hero p { margin: 12px 0 0; color: var(--muted) }
+    .mood-orb {
+      position: relative;
+      width: 158px;
+      height: 158px;
+      justify-self: center;
+      display: grid;
+      place-items: center;
+      border: 1px solid color-mix(in srgb, var(--mood) 45%, transparent);
+      border-radius: 50%;
+      background: radial-gradient(circle at 38% 34%, color-mix(in srgb, var(--mood) 38%, transparent), var(--mood-soft) 55%, transparent 76%);
+      box-shadow: 0 0 80px var(--mood-glow), inset 0 0 30px var(--mood-soft);
+      transition: border-color .45s, background .45s, box-shadow .45s;
+    }
+    .mood-orb::before, .mood-orb::after {
+      position: absolute;
+      inset: -12px;
+      border: 1px solid color-mix(in srgb, var(--mood) 22%, transparent);
+      border-radius: 50%;
+      content: "";
+      animation: orbit 12s linear infinite;
+    }
+    .mood-orb::after { inset: -25px; opacity: .5; animation-direction: reverse; animation-duration: 18s }
+    .orb-icon { position: relative; z-index: 1; color: var(--mood); font-size: 54px; line-height: 1; transition: color .45s; filter: drop-shadow(0 0 20px var(--mood-glow)) }
+    @keyframes orbit { to { transform: rotate(360deg) } }
+    .section-heading { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 27px 2px 12px }
+    .section-heading h2 { margin: 0; font-size: 14px; letter-spacing: .01em }
+    .section-heading span { color: var(--muted); font-size: 12px }
+    .metrics { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px }
+    .card {
+      min-width: 0;
+      padding: 17px;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      background: var(--surface);
+      backdrop-filter: blur(14px);
+      transition: border-color .35s, transform .2s, background .35s;
+    }
+    .card:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--mood) 38%, var(--line)) }
+    .metric-card { min-height: 125px }
+    .metric-top { display: flex; justify-content: space-between; align-items: center; gap: 6px }
+    .label { color: var(--muted); font-size: 11px; letter-spacing: .08em; text-transform: uppercase }
+    .metric-icon { color: var(--mood); font-size: 15px; transition: color .45s }
+    .value { overflow: hidden; margin-top: 13px; font-size: clamp(21px, 2.4vw, 30px); font-weight: 650; line-height: 1.15; text-overflow: ellipsis; white-space: nowrap }
+    .sub { margin-top: 6px; color: var(--muted); font-size: 11px }
+    .alarm-active { border-color: rgba(251, 113, 133, .55); background: rgba(251, 113, 133, .09) }
+    .alarm-active .value { color: #fb7185 }
+    .alarm-clear .value { color: var(--green) }
+    .charts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px }
+    .chart-card { padding: 18px 18px 12px }
+    .chart-heading { display: flex; justify-content: space-between; align-items: center; gap: 8px }
+    .chart-heading h3 { margin: 0; font-size: 13px; font-weight: 600 }
+    .chart-legend { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 11px }
+    .legend-dot { width: 7px; height: 7px; border-radius: 50% }
+    canvas { display: block; width: 100%; height: 175px; margin-top: 8px }
+    .empty { margin-top: 12px; padding: 14px; border: 1px dashed var(--line); border-radius: 12px; color: var(--muted); text-align: center }
+    [hidden] { display: none !important }
+    @media (max-width: 980px) {
+      .metrics { grid-template-columns: repeat(3, minmax(0, 1fr)) }
+      .charts { grid-template-columns: 1fr 1fr }
+      .chart-card:last-child { grid-column: 1 / -1 }
+    }
+    @media (max-width: 620px) {
+      header, main { width: min(100% - 28px, 1180px) }
+      header { min-height: 72px }
+      .hero { grid-template-columns: 1fr 100px; min-height: 190px; padding: 24px 20px; border-radius: 18px }
+      .hero h2 { font-size: 35px }
+      .mood-orb { width: 86px; height: 86px }
+      .mood-orb::before { inset: -7px }
+      .mood-orb::after { inset: -14px }
+      .orb-icon { font-size: 34px }
+      .metrics { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 9px }
+      .card { padding: 14px; border-radius: 14px }
+      .metric-card { min-height: 116px }
+      .charts { grid-template-columns: 1fr }
+      .chart-card:last-child { grid-column: auto }
+      .status { max-width: 48%; font-size: 11px }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; transition-duration: .01ms !important }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="brand">
+      <div class="brand-mark" aria-hidden="true">♫</div>
+      <div><h1>Live music mood</h1><div class="eyebrow">Sound, translated</div></div>
+    </div>
+    <div class="status">
+      <div class="status-line"><span id="dot" class="dot"></span><span id="connection">Connecting to VI data…</span></div>
+      <div id="updated"></div>
+    </div>
+  </header>
+  <main>
+    <section class="hero" aria-label="Current mood">
+      <div class="hero-copy">
+        <div class="eyebrow">The room feels</div>
+        <h2 id="mood">Waiting</h2>
+        <p id="heroDescription">Listening for the next reading…</p>
+        <div id="model" class="sub">Trained model</div>
+      </div>
+      <div class="mood-orb" aria-hidden="true"><span id="moodIcon" class="orb-icon">♫</span></div>
+    </section>
+    <div class="section-heading"><h2>Live readings</h2><span id="sampleCount">Waiting for signal</span></div>
+    <section class="metrics" aria-label="Latest model analysis">
+      <article class="card metric-card"><div class="metric-top"><div class="label">Tempo</div><span class="metric-icon">↗</span></div><div id="bpm" class="value">—</div><div class="sub">Beats per minute</div></article>
+      <article class="card metric-card"><div class="metric-top"><div class="label">Loudness</div><span class="metric-icon">◖</span></div><div id="db" class="value">—</div><div class="sub">Average dB level</div></article>
+      <article class="card metric-card"><div class="metric-top"><div class="label">Pitch</div><span class="metric-icon">⌁</span></div><div id="pitch" class="value">—</div><div class="sub">Dominant frequency · Hz</div></article>
+      <article class="card metric-card"><div class="metric-top"><div class="label">Current note</div><span class="metric-icon">♪</span></div><div id="note" class="value">—</div><div id="noteContext" class="sub">Latest VI sample</div></article>
+      <article id="alarmCard" class="card metric-card"><div class="metric-top"><div class="label">Alarms</div><span class="metric-icon">!</span></div><div id="alarm" class="value">—</div><div id="alarmContext" class="sub">Current VI alarm status</div></article>
+      <article class="card metric-card"><div class="metric-top"><div class="label">Arousal / valence</div><span class="metric-icon">✳</span></div><div id="av" class="value">—</div><div class="sub">Trained regression model</div></article>
+    </section>
+    <div class="section-heading"><h2>Recent trends</h2><span>Window-by-window analysis</span></div>
+    <section class="charts" aria-label="Trends from new VI data">
+      <article class="card chart-card"><div class="chart-heading"><h3>Tempo</h3><span class="chart-legend"><i class="legend-dot" style="background:var(--blue)"></i>BPM</span></div><canvas id="bpmChart" aria-label="Tempo trend"></canvas></article>
+      <article class="card chart-card"><div class="chart-heading"><h3>Loudness</h3><span class="chart-legend"><i class="legend-dot" style="background:var(--pink)"></i>dB</span></div><canvas id="dbChart" aria-label="Loudness trend"></canvas></article>
+      <article class="card chart-card"><div class="chart-heading"><h3>Pitch</h3><span class="chart-legend"><i class="legend-dot" style="background:var(--green)"></i>Hz</span></div><canvas id="pitchChart" aria-label="Pitch trend"></canvas></article>
+    </section>
+    <div id="empty" class="empty" hidden>No VI readings yet. Start the VI and append readings to data.csv.</div>
+  </main>
+  <script>
+    'use strict';
+    const $ = id => document.getElementById(id);
+    const colors = { bpm: '#60a5fa', db_mean: '#f472b6', pitch_hz: '#4ade80' };
+    const number = (value, digits) => value != null && value !== '' && Number.isFinite(Number(value)) ? Number(value).toFixed(digits) : '—';
+    const moodThemes = {
+      energetic: { color: '#fb923c', soft: 'rgba(251,146,60,.15)', glow: 'rgba(251,146,60,.3)', icon: 'ϟ', description: 'High energy, full volume.' },
+      upbeat: { color: '#facc15', soft: 'rgba(250,204,21,.14)', glow: 'rgba(250,204,21,.28)', icon: '☀', description: 'A bright, feel-good moment.' },
+      tense: { color: '#fb7185', soft: 'rgba(251,113,133,.14)', glow: 'rgba(251,113,133,.3)', icon: '〰', description: 'A little edge in the atmosphere.' },
+      melancholic: { color: '#a5b4fc', soft: 'rgba(165,180,252,.15)', glow: 'rgba(165,180,252,.3)', icon: '☾', description: 'A softer, more reflective sound.' },
+      calm: { color: '#60a5fa', soft: 'rgba(96,165,250,.14)', glow: 'rgba(96,165,250,.28)', icon: '◌', description: 'Easy-going and at ease.' },
+      neutral: { color: '#cbd5e1', soft: 'rgba(203,213,225,.12)', glow: 'rgba(203,213,225,.2)', icon: '♫', description: 'A balanced, steady sound.' },
+      silence: { color: '#94a3b8', soft: 'rgba(148,163,184,.12)', glow: 'rgba(148,163,184,.2)', icon: '⏸', description: 'Waiting for the music to return.' }
+    };
+
+    function setMoodTheme(mood) {
+      const theme = moodThemes[String(mood || '').toLowerCase()] || moodThemes.neutral;
+      const root = document.documentElement;
+      root.style.setProperty('--mood', theme.color);
+      root.style.setProperty('--mood-soft', theme.soft);
+      root.style.setProperty('--mood-glow', theme.glow);
+      $('moodIcon').textContent = theme.icon;
+      $('heroDescription').textContent = theme.description;
+    }
+
+    function draw(id, rows, key, color, unit) {
+      const canvas = $(id);
+      const rect = canvas.getBoundingClientRect();
+      const ratio = window.devicePixelRatio || 1;
+      const width = Math.max(220, rect.width);
+      const height = Math.max(150, rect.height);
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      const ctx = canvas.getContext('2d');
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      const points = rows.slice(-180);
+      const values = points.map(row => row[key] == null || row[key] === '' ? NaN : Number(row[key])).filter(Number.isFinite);
+      const left = 42, right = 10, top = 12, bottom = 25;
+      const plotWidth = width - left - right, plotHeight = height - top - bottom;
+      ctx.font = '10px system-ui';
+      for (let i = 0; i <= 3; i++) {
+        const y = top + plotHeight * i / 3;
+        ctx.strokeStyle = 'rgba(148,163,184,.13)';
+        ctx.beginPath(); ctx.moveTo(left, y); ctx.lineTo(width - right, y); ctx.stroke();
+        const label = values.length ? Math.max(...values) - (Math.max(...values) - Math.min(...values)) * i / 3 : 0;
+        ctx.fillStyle = '#9aa8c2'; ctx.textAlign = 'right';
+        ctx.fillText(number(label, key === 'db_mean' ? 0 : 1), left - 7, y + 3);
+      }
+      if (!values.length) {
+        ctx.fillStyle = '#9aa8c2'; ctx.textAlign = 'center'; ctx.fillText('Waiting for readings', width / 2, height / 2);
+        return;
+      }
+      const min = Math.min(...values), max = Math.max(...values);
+      const span = max - min || Math.max(1, Math.abs(max) * 0.1);
+      const line = getComputedStyle(document.documentElement).getPropertyValue('--mood').trim() || color;
+      const gradient = ctx.createLinearGradient(0, top, 0, height - bottom);
+      gradient.addColorStop(0, line + '35');
+      gradient.addColorStop(1, line + '00');
+      ctx.beginPath();
+      let started = false;
+      points.forEach((row, index) => {
+        const value = row[key] == null || row[key] === '' ? NaN : Number(row[key]);
+        if (!Number.isFinite(value)) { started = false; return; }
+        const x = left + plotWidth * index / Math.max(1, points.length - 1);
+        const y = top + plotHeight * (1 - (value - min) / span);
+        if (started) ctx.lineTo(x, y); else { ctx.moveTo(x, y); started = true; }
+      });
+      ctx.strokeStyle = line; ctx.lineWidth = 2.5; ctx.lineJoin = 'round'; ctx.lineCap = 'round'; ctx.stroke();
+      ctx.fillStyle = '#9aa8c2'; ctx.textAlign = 'left'; ctx.fillText(points[0]?.window_start?.slice(11, 16) || '', left, height - 6);
+      ctx.textAlign = 'right'; ctx.fillText(points[points.length - 1]?.window_start?.slice(11, 16) || '', width - right, height - 6);
+      ctx.textAlign = 'left'; ctx.fillText(unit, 4, 12);
+    }
+
+    function render(data) {
+      const rows = data.windows || [];
+      const latest = data.latest;
+      $('empty').hidden = rows.length > 0;
+      $('dot').className = 'dot ok';
+      $('connection').textContent = `Connected · ${data.source_rows} VI rows · ${rows.length} windows`;
+      $('sampleCount').textContent = `${data.sessions_in_source || 0} active sessions · ${rows.length} windows`;
+      $('updated').textContent = `Updated ${new Date(data.generated_at).toLocaleTimeString()}`;
+      $('model').textContent = data.model_used
+        ? (data.model && data.model.includes('av_model') ? 'Trained mood regression model active' : 'Trained mood classifier active')
+        : 'No trained model active';
+      if (latest) {
+        $('mood').textContent = latest.mood || '—';
+        $('bpm').textContent = `${number(latest.bpm, 0)} BPM`;
+        $('db').textContent = `${number(latest.db_mean, 1)} dB`;
+        $('pitch').textContent = `${number(latest.pitch_hz, 1)} Hz`;
+        $('note').textContent = latest.current_note || 'No note';
+        $('noteContext').textContent = latest.top_note ? `Recent favorite: ${latest.top_note}` : 'Latest VI sample';
+        const activeAlarms = Array.isArray(latest.active_alarms) ? latest.active_alarms : [];
+        $('alarm').textContent = activeAlarms.length ? activeAlarms.join(', ') : 'None';
+        $('alarmContext').textContent = activeAlarms.length ? 'Active now' : 'All clear';
+        $('alarmCard').classList.toggle('alarm-active', activeAlarms.length > 0);
+        $('alarmCard').classList.toggle('alarm-clear', activeAlarms.length === 0);
+        $('av').textContent = `${number(latest.arousal_ml, 2)} / ${number(latest.valence_ml, 2)}`;
+        setMoodTheme(latest.mood);
+      }
+      draw('bpmChart', rows, 'bpm', colors.bpm, 'BPM');
+      draw('dbChart', rows, 'db_mean', colors.db_mean, 'dB');
+      draw('pitchChart', rows, 'pitch_hz', colors.pitch_hz, 'Hz');
+    }
+
+    async function refresh() {
+      try {
+        const response = await fetch('/api/dashboard', { cache: 'no-store' });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || `HTTP ${response.status}`);
+        render(data);
+      } catch (error) {
+        $('dot').className = 'dot error';
+        $('connection').textContent = `Waiting for analysis: ${error.message}`;
+      }
+    }
+    window.addEventListener('resize', refresh);
+    refresh();
+    window.setInterval(refresh, 2000);
+  </script>
+</body>
+</html>

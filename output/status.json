@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-11-03T20:27:34+05:30",
+  "source_rows": 2748,
+  "sessions_in_source": 3,
+  "warnings": [],
+  "model_used": true,
+  "latest": {
+    "session_id": "S20261103_202646",
+    "window_start": "2026-11-03 20:27:26",
+    "mood": "melancholic",
+    "mood_rule": "melancholic",
+    "bpm": null,
+    "db_mean": -44.09,
+    "pitch_hz": 197.2,
+    "top_note": "G2",
+    "key": "G minor",
+    "current_note": "G2",
+    "active_alarms": []
+  },
+  "model": "models/av_model.joblib",
+  "totals": {
+    "sessions": 100,
+    "windows": 1774,
+    "alarms": 638
+  }
+}

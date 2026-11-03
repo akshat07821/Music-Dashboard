@@ -1,0 +1,25 @@
+{
+  "_help": "Edit data_file to the full path of the CSV your LabVIEW VI writes. On Windows use forward slashes or double backslashes.",
+  "data_file": "data.csv",
+  "output_dir": "output",
+  "model_file": "models/mood_model.joblib",
+  "python_cmd": "python",
+  "port": 3000,
+  "poll_ms": 1000,
+  "min_interval_sec": 5,
+
+  "window_sec": 5,
+  "session_gap_sec": 30,
+  "silence_db": -50,
+  "bpm_valid_min": 30,
+  "bpm_valid_max": 250,
+
+  "bpm_center": 100,
+  "bpm_span": 60,
+  "db_center": -35,
+  "db_span": 20,
+
+  "key_context_sec": 20,
+  "min_key_samples": 10,
+  "use_ml_model": true
+}

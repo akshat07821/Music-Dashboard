@@ -1,0 +1,11 @@
+{
+  "name": "music-analytics",
+  "version": "1.0.0",
+  "description": "Watches LabVIEW data.csv and serves a trained-model live mood dashboard",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "analyze": "python analyzer.py"
+  },
+  "license": "MIT"
+}
